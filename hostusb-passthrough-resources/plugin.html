@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <script type="text/javascript">
 
 var api = parent.pluginApi("hostusb-passthrough");
@@ -11,24 +12,24 @@ var token = "hostusb-passthrough";
 
 var vm = null;
 var host = null;
-var agent = null;
 var vmHostUSBWindow = null;
 
 function setAccessible(accessible) {
     api.setTabAccessible(token, accessible);
 }
 
-function getEngineJson(url, cfunc) {
+function getEngineJson(url, cfunc, method, data) {
     xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             cfunc(JSON.parse(xmlhttp.responseText));
         }
     }
-    xmlhttp.open("GET", conf.engine_api_url + url, true);
+    xmlhttp.open(method, conf.engine_api_url + url, true);
     xmlhttp.setRequestHeader("Accept", "application/json");
+    xmlhttp.setRequestHeader("Content-type", "application/json");
     xmlhttp.setRequestHeader("Prefer", "persistent-auth");
-    xmlhttp.send();
+    xmlhttp.send(data);
 }
 
 function searchVM() {
@@ -40,7 +41,18 @@ function searchVM() {
                 setAccessible(true);
                 host = obj.host.id;
             }
-        }
+        },
+        "GET"
+    );
+}
+
+function listHostUSB(vms) {
+    getEngineJson(
+        "/hosts/" + host + "/hostusbs",
+        function (obj) {
+            vmHostUSBWindow.update(obj.hostusb, vm, vms);
+        },
+        "GET"
     );
 }
 
@@ -50,8 +62,9 @@ function searchVMsOnHost(hostname) {
         "/vms?search=host%3D" + hostname,
         function (obj) {
             obj.vm.map(function (n) {vms[n.id] = n.name;});
-            vmHostUSBWindow.update(conf.agent_proxy, agent, vm, vms);
-        }
+            listHostUSB(vms);
+        },
+        "GET"
     );
 }
 
@@ -59,9 +72,9 @@ function updateHostUSB() {
     getEngineJson(
         "/hosts/" + host,
         function (obj) {
-            agent = obj.address + ":" + conf.agent_port;
             searchVMsOnHost(obj.name);
-        }
+        },
+        "GET"
     );
 }
 
@@ -83,10 +96,29 @@ api.register({
         }
     },
     MessageReceived: function(data, sourceWindow) {
-        switch (data) {
+        vmHostUSBWindow = sourceWindow;
+        switch (data.msg) {
         case "ready":
-            vmHostUSBWindow = sourceWindow;
             updateHostUSB();
+            break;
+        case "attach":
+            getEngineJson(
+                "/vms/" + vm + "/hostusbs",
+                function (obj) {
+                    updateHostUSB();
+                },
+                "POST",
+                '{"devname": "' + data.devname + '"}'
+            );
+            break;
+        case "detach":
+            getEngineJson(
+                "/vms/" + vm + "/hostusbs/" + data.devname,
+                function (obj) {
+                    updateHostUSB();
+                },
+                "DELETE"
+            );
             break;
         }
     },
