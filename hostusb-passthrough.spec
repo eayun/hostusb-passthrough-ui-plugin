@@ -27,9 +27,9 @@ Requires:	patternfly1
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/usr/share/ovirt-engine/ui-plugins/hostusb-passthrough-resources/
-cp hostusb-passthrough-plugin/hostusb-passthrough.json %{buildroot}/usr/share/ovirt-engine/ui-plugins/
-cp hostusb-passthrough-plugin/hostusb-passthrough-resources/plugin.html %{buildroot}/usr/share/ovirt-engine/ui-plugins/hostusb-passthrough-resources/
-cp hostusb-passthrough-plugin/hostusb-passthrough-resources/hostusb-passthrough.html %{buildroot}/usr/share/ovirt-engine/ui-plugins/hostusb-passthrough-resources/
+cp hostusb-passthrough.json %{buildroot}/usr/share/ovirt-engine/ui-plugins/
+cp hostusb-passthrough-resources/plugin.html %{buildroot}/usr/share/ovirt-engine/ui-plugins/hostusb-passthrough-resources/
+cp hostusb-passthrough-resources/hostusb-passthrough.html %{buildroot}/usr/share/ovirt-engine/ui-plugins/hostusb-passthrough-resources/
 
 %clean
 rm -rf %{buildroot}
