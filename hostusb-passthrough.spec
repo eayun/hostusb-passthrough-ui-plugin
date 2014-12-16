@@ -51,6 +51,6 @@ unlink /usr/share/ovirt-engine/ui-plugins/hostusb-passthrough-resources/js
 
 %changelog
 
-* Fri Nov 21 2014 MaZhe <liyang.pan@eayun.com> 1.0-1
+* Tue Dec 16 2014 walteryang47 <walteryang47@gmail.com> 1.0-1
 - First build
 
